@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Búsqueda Aduanas</title>
+</head>
+<body>
+    {% for seccion in secciones %}
+        <h1>Sección {{ seccion.titulo }}</h1>
+        <p>{{ seccion.descripcion }}</p>
+        {% if seccion.notas %}
+            <strong>Notas:</strong> {{ seccion.notas }}<br>
+        {% endif %}
+        {% if seccion.notas_complementarias_nandina %}
+            <strong>Notas Complementarias NANDINA:</strong> {{ seccion.notas_complementarias_nandina }}
+        {% endif %}
+        <hr>
+    {% endfor %}
+
+    {% for capitulo in capitulos %}
+        <h2>Capítulo {{ capitulo.titulo }}</h2>
+        <p>{{ capitulo.descripcion }}</p>
+        {% if capitulo.nota %}
+            <strong>Nota:</strong> {{ capitulo.nota }}
+        {% endif %}
+        <hr>
+    {% endfor %}
+
+    <h3>Tabla de Aranceles</h3>
+    <table border="1">
+        <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>GA</th>
+            <th>ICE</th>
+            <th>Unidad de Medida</th>
+            <th>Despacho Frontera</th>
+            <th>Documentos Adicionales</th>
+            <th>Preferencias Arancelarias</th>
+            <th>ACE22</th>
+            <th>ACE66 México</th>
+            <!-- Agrega más columnas si tienes más campos -->
+        </tr>
+        {% for arancel in aranceles %}
+        <tr>
+            <td>{{ arancel.codigo }}</td>
+            <td>{{ arancel.descripcion }}</td>
+            <td>{{ arancel.ga }}</td>
+            <td>{{ arancel.ice }}</td>
+            <td>{{ arancel.unidad_medida }}</td>
+            <td>{{ arancel.despacho_frontera }}</td>
+            <td>{{ arancel.documentos_adicionales }}</td>
+            <td>{{ arancel.preferencias_arancelarias }}</td>
+            <td>{{ arancel.ace22 }}</td>
+            <td>{{ arancel.ace66_mexico }}</td>
+            <!-- Agrega más campos si tu modelo tiene más -->
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
