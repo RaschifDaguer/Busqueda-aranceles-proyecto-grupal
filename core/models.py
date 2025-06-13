@@ -29,11 +29,13 @@ class DocumentosAdicionales(models.Model):
 class PreferenciasArancelarias(models.Model):
     can = models.CharField(max_length=50, verbose_name="CAN", blank=True, null=True)
     ace_36 = models.CharField(max_length=50, verbose_name="ACE 36", blank=True, null=True)
-    ace_37 = models.CharField(max_length=50, verbose_name="ACE 37", blank=True, null=True)
+    ace_47 = models.CharField(max_length=50, verbose_name="ACE 47", blank=True, null=True)
     ven = models.CharField(max_length=50, verbose_name="VEN", blank=True, null=True)
 
     def __str__(self):
-        return f"CAN: {self.can}, ACE 36: {self.ace_36}, ACE 37: {self.ace_37}, VEN: {self.ven}"
+        if self.can == '100' or self.ace_36 == '100' or self.ace_47 == '100' or self.ven == '100':
+            return '100'
+        return ''
 
 class ACE22(models.Model):
     chi = models.CharField(max_length=50, verbose_name="Chi", blank=True, null=True)
@@ -61,13 +63,14 @@ class Arancel(models.Model):
     ice = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="ICE %", blank=True, null=True)
     unidad_medida = models.CharField(max_length=50, verbose_name="Unidad de Medida", blank=True, null=True)
     despacho_frontera = models.CharField(max_length=100, verbose_name="Despacho en Frontera", blank=True, null=True)
-    documentos_adicionales = models.OneToOneField(DocumentosAdicionales, on_delete=models.SET_NULL, null=True, blank=True)
-    preferencias_arancelarias = models.OneToOneField(PreferenciasArancelarias, on_delete=models.SET_NULL, null=True, blank=True)
-    ace22 = models.OneToOneField(ACE22, on_delete=models.SET_NULL, null=True, blank=True)
-    ace66_mexico = models.OneToOneField(ACE66Mexico, on_delete=models.SET_NULL, null=True, blank=True)
+    documentos_adicionales = models.ForeignKey(DocumentosAdicionales, on_delete=models.SET_NULL, null=True, blank=True)
+    preferencias_arancelarias = models.ForeignKey(PreferenciasArancelarias, on_delete=models.SET_NULL, null=True, blank=True)
+    ace22 = models.ForeignKey(ACE22, on_delete=models.SET_NULL, null=True, blank=True)
+    ace66_mexico = models.ForeignKey(ACE66Mexico, on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        capitulo = self.capituloaranc.titulo if self.capituloaranc else ''
+        # Formatear el capítulo a dos dígitos para el código
+        capitulo = f"{int(self.capituloaranc.titulo):02}" if self.capituloaranc and self.capituloaranc.titulo.isdigit() else (self.capituloaranc.titulo if self.capituloaranc else '')
         partida = f"{self.partida}." if self.partida else ''
         subpartida = f"{self.subpartida}." if self.subpartida else ''
         subpartida_nacional = f"{self.subpartida_nacional}." if self.subpartida_nacional else ''

@@ -41,9 +41,9 @@ def buscador_aranceles(request):
     })
 
 def busqueda_view(request):
-    secciones = Seccion.objects.all()
-    capitulos = Capitulo.objects.all()
-    aranceles = Arancel.objects.all()
+    secciones = Seccion.objects.all().order_by('titulo')
+    capitulos = Capitulo.objects.all().order_by('titulo')
+    aranceles = Arancel.objects.all().order_by('capituloaranc__titulo', 'codigo')
     return render(request, 'core/Buscadoraduanas.html', {
         'secciones': secciones,
         'capitulos': capitulos,

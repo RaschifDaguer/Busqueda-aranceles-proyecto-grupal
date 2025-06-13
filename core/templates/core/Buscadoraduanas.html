@@ -15,47 +15,58 @@
             <strong>Notas Complementarias NANDINA:</strong> {{ seccion.notas_complementarias_nandina }}
         {% endif %}
         <hr>
-    {% endfor %}
-
-    {% for capitulo in capitulos %}
-        <h2>Capítulo {{ capitulo.titulo }}</h2>
-        <p>{{ capitulo.descripcion }}</p>
-        {% if capitulo.nota %}
-            <strong>Nota:</strong> {{ capitulo.nota }}
-        {% endif %}
-        <hr>
-    {% endfor %}
-
-    <h3>Tabla de Aranceles</h3>
-    <table border="1">
-        <tr>
-            <th>Código</th>
-            <th>Descripción</th>
-            <th>GA</th>
-            <th>ICE</th>
-            <th>Unidad de Medida</th>
-            <th>Despacho Frontera</th>
-            <th>Documentos Adicionales</th>
-            <th>Preferencias Arancelarias</th>
-            <th>ACE22</th>
-            <th>ACE66 México</th>
-            <!-- Agrega más columnas si tienes más campos -->
-        </tr>
-        {% for arancel in aranceles %}
-        <tr>
-            <td>{{ arancel.codigo }}</td>
-            <td>{{ arancel.descripcion }}</td>
-            <td>{{ arancel.ga }}</td>
-            <td>{{ arancel.ice }}</td>
-            <td>{{ arancel.unidad_medida }}</td>
-            <td>{{ arancel.despacho_frontera }}</td>
-            <td>{{ arancel.documentos_adicionales }}</td>
-            <td>{{ arancel.preferencias_arancelarias }}</td>
-            <td>{{ arancel.ace22 }}</td>
-            <td>{{ arancel.ace66_mexico }}</td>
-            <!-- Agrega más campos si tu modelo tiene más -->
-        </tr>
+        {% for capitulo in capitulos %}
+            {% if capitulo.seccion_id == seccion.id %}
+                <h2>Capítulo {% if capitulo.titulo|length == 1 %}0{{ capitulo.titulo }}{% else %}{{ capitulo.titulo }}{% endif %}</h2>
+                <p>{{ capitulo.descripcion }}</p>
+                {% if capitulo.nota %}
+                    <strong>Nota:</strong> {{ capitulo.nota }}<br>
+                {% endif %}
+                <h3>Tabla de Aranceles</h3>
+                <table border="1">
+                    <tr>
+                        <th rowspan="2">Código</th>
+                        <th rowspan="2">Descripción</th>
+                        <th rowspan="2">GA</th>
+                        <th rowspan="2">ICE</th>
+                        <th rowspan="2">Unidad de Medida</th>
+                        <th rowspan="2">Despacho Frontera</th>
+                        <th colspan="3">Documento Adicional para el Despacho Aduanero</th>
+                        <th rowspan="2">Preferencias Arancelarias</th>
+                        <th rowspan="2">ACE 66, MÉXICO</th>
+                    </tr>
+                    <tr>
+                        <th>Tipo de Doc</th>
+                        <th>Entidad que emite</th>
+                        <th>Disp. Legal</th>
+                    </tr>
+                    {% for arancel in aranceles %}
+                        {% if arancel.capituloaranc.id == capitulo.id %}
+                            <tr>
+                                <td>{{ arancel.codigo|default_if_none:""|default:"" }}</td>
+                                <td>{{ arancel.descripcion|default_if_none:""|default:"" }}</td>
+                                <td>{% if arancel.ga %}{{ arancel.ga|floatformat:0 }}{% else %}{% endif %}</td>
+                                <td>{{ arancel.ice|default_if_none:""|default:"" }}</td>
+                                <td>{{ arancel.unidad_medida|default_if_none:""|default:"" }}</td>
+                                <td>{{ arancel.despacho_frontera|default_if_none:""|default:"" }}</td>
+                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.tipo_doc|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
+                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.entidad_emite|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
+                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.disp_legal|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
+                                <td>
+                                    {% if arancel.preferencias_arancelarias %}
+                                        {% if arancel.preferencias_arancelarias.can == '100' or arancel.preferencias_arancelarias.ace_36 == '100' or arancel.preferencias_arancelarias.ace_47 == '100' or arancel.preferencias_arancelarias.ven == '100' %}
+                                            100
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{% if arancel.ace66_mexico %}{{ arancel.ace66_mexico.ace_66_mexico|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+                <hr>
+            {% endif %}
         {% endfor %}
-    </table>
+    {% endfor %}
 </body>
 </html>
