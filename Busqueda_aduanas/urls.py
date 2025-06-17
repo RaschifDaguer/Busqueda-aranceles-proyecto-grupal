@@ -19,5 +19,6 @@ from django.urls import path, include  # Debe estar importado
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),  # Esto conecta las URLs de tu app core
+    path('core/', include('core.urls')),  # Ahora todas las rutas estarán bajo /core/
+    path('', include('core.urls')),  # Redirige la raíz al login/buscador
 ]

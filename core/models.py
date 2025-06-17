@@ -1,4 +1,45 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils import timezone
+
+class CustomUserManager(BaseUserManager):
+    use_in_migrations = True
+    def create_user(self, username, email=None, credencial=None, role=None, password=None, **extra_fields):
+        if not username:
+            raise ValueError('El nombre de usuario es obligatorio')
+        if credencial and (len(credencial) != 6 or not credencial.isdigit()):
+            raise ValueError('La credencial debe ser un número de 6 dígitos')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, credencial=credencial, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(username, email=email, password=password, role=None, credencial=None, **extra_fields)
+
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = (
+        ('gerente', 'Gerente'),
+        ('despachante', 'Despachante de Aduanas'),
+    )
+    credencial = models.CharField(max_length=6, unique=True, null=True, blank=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return f"{self.username} ({self.get_role_display() if self.role else 'Superusuario'})"
+
+class HistorialBusqueda(models.Model):
+    usuario = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    termino = models.CharField(max_length=255)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} buscó '{self.termino}' el {self.fecha}"
 
 class Seccion(models.Model):
     titulo = models.CharField(max_length=10, verbose_name="Título de Sección")  # Ej: 1, 2, 3...
@@ -80,5 +121,3 @@ class Arancel(models.Model):
 
     def __str__(self):
         return f"{self.capituloaranc} - {self.descripcion}"
-
-# ...no cambies nada más aquí...

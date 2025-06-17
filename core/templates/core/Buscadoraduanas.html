@@ -1,72 +1,205 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Búsqueda Aduanas</title>
-</head>
-<body>
-    {% for seccion in secciones %}
-        <h1>Sección {{ seccion.titulo }}</h1>
-        <p>{{ seccion.descripcion }}</p>
-        {% if seccion.notas %}
-            <strong>Notas:</strong> {{ seccion.notas }}<br>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" action="{% url 'busqueda_combinada' %}" autocomplete="off" id="busquedaCombinadaForm" class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" name="codigo" id="busquedaCodigoInput" class="form-control" placeholder="Buscar por código..." value="{{ busqueda_codigo|default:'' }}">
+                    <div id="autocomplete-codigo" class="autocomplete-suggestions position-absolute w-100"></div>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="descripcion" id="busquedaDescripcionInput" class="form-control" placeholder="Buscar por descripción..." value="{{ busqueda_descripcion|default:'' }}">
+                    <div id="autocomplete-descripcion" class="autocomplete-suggestions position-absolute w-100"></div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if busqueda_mensaje %}
+        <div class="alert alert-danger">{{ busqueda_mensaje }}</div>
+    {% endif %}
+    {% if busqueda_codigo or busqueda_descripcion %}
+        {% if aranceles %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">Resultados de la búsqueda</div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>GA</th>
+                                    <th>ICE</th>
+                                    <th>Unidad de Medida</th>
+                                    <th>Despacho Frontera</th>
+                                    <th>Documento Adicional</th>
+                                    <th>Preferencias Arancelarias</th>
+                                    <th>ACE 66, MÉXICO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for arancel in aranceles %}
+                                <tr>
+                                    <td>{{ arancel.codigo|default_if_none:""|default:"" }}</td>
+                                    <td>{{ arancel.descripcion|default_if_none:""|default:"" }}</td>
+                                    <td>{% if arancel.ga %}{{ arancel.ga|floatformat:0 }}{% endif %}</td>
+                                    <td>{{ arancel.ice|default_if_none:""|default:"" }}</td>
+                                    <td>{{ arancel.unidad_medida|default_if_none:""|default:"" }}</td>
+                                    <td>{{ arancel.despacho_frontera|default_if_none:""|default:"" }}</td>
+                                    <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.tipo_doc|default_if_none:""|default:"" }}{% endif %}</td>
+                                    <td>{% if arancel.preferencias_arancelarias %}100{% endif %}</td>
+                                    <td>{% if arancel.ace66_mexico %}{{ arancel.ace66_mexico.ace_66_mexico|default_if_none:""|default:"" }}{% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         {% endif %}
-        {% if seccion.notas_complementarias_nandina %}
-            <strong>Notas Complementarias NANDINA:</strong> {{ seccion.notas_complementarias_nandina }}
-        {% endif %}
-        <hr>
-        {% for capitulo in capitulos %}
-            {% if capitulo.seccion_id == seccion.id %}
-                <h2>Capítulo {% if capitulo.titulo|length == 1 %}0{{ capitulo.titulo }}{% else %}{{ capitulo.titulo }}{% endif %}</h2>
-                <p>{{ capitulo.descripcion }}</p>
-                {% if capitulo.nota %}
-                    <strong>Nota:</strong> {{ capitulo.nota }}<br>
+    {% else %}
+        {% for seccion in secciones %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Sección {{ seccion.titulo }}: {{ seccion.descripcion }}</h4>
+            </div>
+            <div class="card-body">
+                {% if seccion.notas %}
+                    <p><strong>Notas:</strong> {{ seccion.notas }}</p>
                 {% endif %}
-                <h3>Tabla de Aranceles</h3>
-                <table border="1">
-                    <tr>
-                        <th rowspan="2">Código</th>
-                        <th rowspan="2">Descripción</th>
-                        <th rowspan="2">GA</th>
-                        <th rowspan="2">ICE</th>
-                        <th rowspan="2">Unidad de Medida</th>
-                        <th rowspan="2">Despacho Frontera</th>
-                        <th colspan="3">Documento Adicional para el Despacho Aduanero</th>
-                        <th rowspan="2">Preferencias Arancelarias</th>
-                        <th rowspan="2">ACE 66, MÉXICO</th>
-                    </tr>
-                    <tr>
-                        <th>Tipo de Doc</th>
-                        <th>Entidad que emite</th>
-                        <th>Disp. Legal</th>
-                    </tr>
-                    {% for arancel in aranceles %}
-                        {% if arancel.capituloaranc.id == capitulo.id %}
-                            <tr>
-                                <td>{{ arancel.codigo|default_if_none:""|default:"" }}</td>
-                                <td>{{ arancel.descripcion|default_if_none:""|default:"" }}</td>
-                                <td>{% if arancel.ga %}{{ arancel.ga|floatformat:0 }}{% else %}{% endif %}</td>
-                                <td>{{ arancel.ice|default_if_none:""|default:"" }}</td>
-                                <td>{{ arancel.unidad_medida|default_if_none:""|default:"" }}</td>
-                                <td>{{ arancel.despacho_frontera|default_if_none:""|default:"" }}</td>
-                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.tipo_doc|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
-                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.entidad_emite|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
-                                <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.disp_legal|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
-                                <td>
-                                    {% if arancel.preferencias_arancelarias %}
-                                        {% if arancel.preferencias_arancelarias.can == '100' or arancel.preferencias_arancelarias.ace_36 == '100' or arancel.preferencias_arancelarias.ace_47 == '100' or arancel.preferencias_arancelarias.ven == '100' %}
-                                            100
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                                <td>{% if arancel.ace66_mexico %}{{ arancel.ace66_mexico.ace_66_mexico|default_if_none:""|default:"" }}{% else %}{% endif %}</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-                <hr>
-            {% endif %}
+                {% if seccion.notas_complementarias_nandina %}
+                    <p><strong>Notas Complementarias NANDINA:</strong> {{ seccion.notas_complementarias_nandina }}</p>
+                {% endif %}
+                {% for capitulo in capitulos %}
+                    {% if capitulo.seccion_id == seccion.id %}
+                        <div class="card mb-3 border-primary">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Capítulo {% if capitulo.titulo|length == 1 %}0{{ capitulo.titulo }}{% else %}{{ capitulo.titulo }}{% endif %}: {{ capitulo.descripcion }}</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if capitulo.nota %}
+                                    <p><strong>Nota:</strong> {{ capitulo.nota }}</p>
+                                {% endif %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Descripción</th>
+                                                <th>GA</th>
+                                                <th>ICE</th>
+                                                <th>Unidad de Medida</th>
+                                                <th>Despacho Frontera</th>
+                                                <th>Documento Adicional</th>
+                                                <th>Preferencias Arancelarias</th>
+                                                <th>ACE 66, MÉXICO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for arancel in aranceles %}
+                                                {% if arancel.capituloaranc.id == capitulo.id %}
+                                                <tr>
+                                                    <td>{{ arancel.codigo|default_if_none:""|default:"" }}</td>
+                                                    <td>{{ arancel.descripcion|default_if_none:""|default:"" }}</td>
+                                                    <td>{% if arancel.ga %}{{ arancel.ga|floatformat:0 }}{% endif %}</td>
+                                                    <td>{{ arancel.ice|default_if_none:""|default:"" }}</td>
+                                                    <td>{{ arancel.unidad_medida|default_if_none:""|default:"" }}</td>
+                                                    <td>{{ arancel.despacho_frontera|default_if_none:""|default:"" }}</td>
+                                                    <td>{% if arancel.documentos_adicionales %}{{ arancel.documentos_adicionales.tipo_doc|default_if_none:""|default:"" }}{% endif %}</td>
+                                                    <td>{% if arancel.preferencias_arancelarias %}100{% endif %}</td>
+                                                    <td>{% if arancel.ace66_mexico %}{{ arancel.ace66_mexico.ace_66_mexico|default_if_none:""|default:"" }}{% endif %}</td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
         {% endfor %}
-    {% endfor %}
-</body>
-</html>
+    {% endif %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Autocompletado para código
+    const inputCodigo = document.getElementById('busquedaCodigoInput');
+    const listCodigo = document.getElementById('autocomplete-codigo');
+    let timeoutCodigo = null;
+    inputCodigo.addEventListener('input', function() {
+        clearTimeout(timeoutCodigo);
+        const term = this.value;
+        if (term.length < 2) {
+            listCodigo.innerHTML = '';
+            return;
+        }
+        timeoutCodigo = setTimeout(() => {
+            fetch(`/core/autocompletar-codigo/?term=${encodeURIComponent(term)}`)
+                .then(response => response.json())
+                .then(data => {
+                    listCodigo.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-suggestion';
+                            div.textContent = `${item.codigo} - ${item.descripcion}`;
+                            div.onclick = () => {
+                                inputCodigo.value = item.codigo;
+                                listCodigo.innerHTML = '';
+                            };
+                            listCodigo.appendChild(div);
+                        });
+                    }
+                });
+        }, 200);
+    });
+    document.addEventListener('click', function(e) {
+        if (!inputCodigo.contains(e.target) && !listCodigo.contains(e.target)) {
+            listCodigo.innerHTML = '';
+        }
+    });
+    // Autocompletado para descripción
+    const inputDesc = document.getElementById('busquedaDescripcionInput');
+    const listDesc = document.getElementById('autocomplete-descripcion');
+    let timeoutDesc = null;
+    inputDesc.addEventListener('input', function() {
+        clearTimeout(timeoutDesc);
+        const term = this.value;
+        if (term.length < 2) {
+            listDesc.innerHTML = '';
+            return;
+        }
+        timeoutDesc = setTimeout(() => {
+            fetch(`/core/autocompletar-descripcion/?term=${encodeURIComponent(term)}`)
+                .then(response => response.json())
+                .then(data => {
+                    listDesc.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-suggestion';
+                            div.textContent = `${item.codigo} - ${item.descripcion}`;
+                            div.onclick = () => {
+                                inputDesc.value = item.descripcion;
+                                listDesc.innerHTML = '';
+                            };
+                            listDesc.appendChild(div);
+                        });
+                    }
+                });
+        }, 200);
+    });
+    document.addEventListener('click', function(e) {
+        if (!inputDesc.contains(e.target) && !listDesc.contains(e.target)) {
+            listDesc.innerHTML = '';
+        }
+    });
+</script>
+{% endblock %}

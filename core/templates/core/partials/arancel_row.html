@@ -1,0 +1,17 @@
+<tr id="arancel-row-{{ arancel.id }}">
+    <td>{{ arancel.codigo }}</td>
+    <td>{{ arancel.capituloaranc }}</td>
+    <td>{{ arancel.partida }}</td>
+    <td>{{ arancel.subpartida }}</td>
+    <td>{{ arancel.subpartida_nacional }}</td>
+    <td>{{ arancel.desagregacion_nacional }}</td>
+    <td>{{ arancel.descripcion }}</td>
+    <td>{{ arancel.ga }}</td>
+    <td>{{ arancel.ice }}</td>
+    <td>{{ arancel.unidad_medida }}</td>
+    <td>{{ arancel.despacho_frontera }}</td>
+    <td>
+        <button class="btn btn-sm btn-primary edit-arancel" data-id="{{ arancel.id }}">Editar</button>
+        <button class="btn btn-sm btn-danger delete-arancel" data-id="{{ arancel.id }}">Eliminar</button>
+    </td>
+</tr>
